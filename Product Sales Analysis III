@@ -1,0 +1,20 @@
+SELECT 
+    b.product_id, 
+    sub.first_year,
+    a.quantity,
+    a.price
+FROM 
+    sales AS a
+JOIN 
+    product AS b ON a.product_id = b.product_id
+JOIN 
+    (SELECT 
+         product_id, 
+         MIN(year) AS first_year 
+     FROM 
+         sales 
+     GROUP BY 
+         product_id
+    ) AS sub 
+ON 
+    a.product_id = sub.product_id AND a.year = sub.first_year;
