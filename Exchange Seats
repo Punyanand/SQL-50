@@ -1,0 +1,9 @@
+# Write your MySQL query statement below
+with new_seat as (select id, student, max(id) over () as last
+from seat)
+select
+(case
+when ((id%2 != 0) and (id != last)) then id+1
+when (id%2 = 0) then id-1
+else id
+end) as id, student from new_seat order by id;
