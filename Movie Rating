@@ -1,0 +1,70 @@
+# Write your MySQL query statement below
+WITH UserRatingCount AS (
+    SELECT 
+        u.name,
+        COUNT(r.movie_id) AS total_ratings
+    FROM 
+        Users u
+    JOIN 
+        MovieRating r
+        ON u.user_id = r.user_id
+    GROUP BY 
+        u.name
+),
+MaxRatings AS (
+    SELECT 
+        MAX(total_ratings) AS max_ratings
+    FROM 
+        UserRatingCount
+),
+TopUser AS (
+    SELECT 
+        name
+    FROM 
+        UserRatingCount
+    WHERE 
+        total_ratings = (SELECT max_ratings FROM MaxRatings)
+    ORDER BY 
+        name ASC
+    LIMIT 1
+),
+FebruaryRatings AS (
+    SELECT 
+        r.movie_id,
+        AVG(r.rating) AS avg_rating
+    FROM 
+        MovieRating r
+    WHERE 
+        DATE_FORMAT(r.created_at, '%Y-%m') = '2020-02'
+    GROUP BY 
+        r.movie_id
+),
+MaxAverageRatings AS (
+    SELECT 
+        MAX(avg_rating) AS max_avg_rating
+    FROM 
+        FebruaryRatings
+),
+TopMovie AS (
+    SELECT 
+        m.title
+    FROM 
+        Movies m
+    JOIN 
+        FebruaryRatings fr
+        ON m.movie_id = fr.movie_id
+    WHERE 
+        fr.avg_rating = (SELECT max_avg_rating FROM MaxAverageRatings)
+    ORDER BY 
+        m.title ASC
+    LIMIT 1
+)
+SELECT 
+    name AS results
+FROM 
+    TopUser
+UNION ALL
+SELECT 
+    title AS results
+FROM 
+    TopMovie;
